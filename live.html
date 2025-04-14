@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorteo en Vivo 🎉</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #ff6b6b;
+        }
+        #winnerDisplay {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin: 20px 0;
+        }
+        #participantsList, #prizesList {
+            text-align: left;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎊 Sorteo en Vivo 🎊</h1>
+    
+    <div id="waitingMessage">
+        <p>El sorteo comenzará pronto... ⌛</p>
+    </div>
+    
+    <div id="drawResults" class="hidden">
+        <h2>¡Y el ganador es...!</h2>
+        <div id="winnerDisplay"></div>
+        <h3>Participantes:</h3>
+        <ul id="participantsList"></ul>
+        <h3>Premios:</h3>
+        <ul id="prizesList"></ul>
+    </div>
+    
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const sorteoId = urlParams.get('id');
+        const sorteoData = JSON.parse(localStorage.getItem(`sorteo_${sorteoId}`));
+        
+        if (!sorteoData) {
+            document.body.innerHTML = "<h1>Error: Sorteo no encontrado.</h1>";
+        } else {
+            // Muestra participantes y premios
+            updateList('participantsList', sorteoData.participants);
+            updateList('prizesList', sorteoData.prizes);
+            
+            // Simula un retraso para el "sorteo en vivo"
+            setTimeout(() => {
+                document.getElementById('waitingMessage').classList.add('hidden');
+                document.getElementById('drawResults').classList.remove('hidden');
+                
+                if (sorteoData.winner) {
+                    // Si ya hay un ganador manipulado, lo muestra
+                    document.getElementById('winnerDisplay').textContent = `🎉 ${sorteoData.winner} 🎉`;
+                } else {
+                    // Si no, elige uno al azar (o puedes manipularlo)
+                    const randomWinner = sorteoData.participants[Math.floor(Math.random() * sorteoData.participants.length)];
+                    document.getElementById('winnerDisplay').textContent = `🎉 ${randomWinner} 🎉`;
+                }
+            }, 5000); // 5 segundos de "suspenso"
+        }
+        
+        function updateList(listId, items) {
+            const list = document.getElementById(listId);
+            list.innerHTML = '';
+            items.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = item;
+                list.appendChild(li);
+            });
+        }
+    </script>
+</body>
+</html>
