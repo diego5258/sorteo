@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sorteo en Vivo 🎉</title>
+    <title>Resultados del Sorteo 🎉</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -16,17 +16,28 @@
         h1 {
             color: #ff6b6b;
         }
-        #winnerDisplay {
-            font-size: 24px;
+        #countdown {
+            font-size: 48px;
             font-weight: bold;
             color: #4CAF50;
             margin: 20px 0;
         }
-        #participantsList, #prizesList {
+        #results {
             text-align: left;
+            margin: 20px 0;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: none; /* Oculto inicialmente */
         }
-        .hidden {
-            display: none;
+        .winner {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        #waitingMessage {
+            font-size: 20px;
+            margin: 10px 0;
         }
     </style>
 </head>
@@ -34,16 +45,14 @@
     <h1>🎊 Sorteo en Vivo 🎊</h1>
     
     <div id="waitingMessage">
-        <p>El sorteo comenzará pronto... ⌛</p>
+        <p>El sorteo comenzará en...</p>
     </div>
     
-    <div id="drawResults" class="hidden">
-        <h2>¡Y el ganador es...!</h2>
-        <div id="winnerDisplay"></div>
-        <h3>Participantes:</h3>
-        <ul id="participantsList"></ul>
-        <h3>Premios:</h3>
-        <ul id="prizesList"></ul>
+    <div id="countdown">00:10</div>
+    
+    <div id="results">
+        <h2>🎉 Premios asignados:</h2>
+        <ul id="assignedPrizesList"></ul>
     </div>
     
     <script>
@@ -54,34 +63,32 @@
         if (!sorteoData) {
             document.body.innerHTML = "<h1>Error: Sorteo no encontrado.</h1>";
         } else {
-            // Muestra participantes y premios
-            updateList('participantsList', sorteoData.participants);
-            updateList('prizesList', sorteoData.prizes);
+            // Contador regresivo (2 minutos = 120 segundos)
+            let timeLeft = 10;
+            const countdownElement = document.getElementById("countdown");
+            const resultsDiv = document.getElementById("results");
             
-            // Simula un retraso para el "sorteo en vivo"
-            setTimeout(() => {
-                document.getElementById('waitingMessage').classList.add('hidden');
-                document.getElementById('drawResults').classList.remove('hidden');
+            const timer = setInterval(() => {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                countdownElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
                 
-                if (sorteoData.winner) {
-                    // Si ya hay un ganador manipulado, lo muestra
-                    document.getElementById('winnerDisplay').textContent = `🎉 ${sorteoData.winner} 🎉`;
-                } else {
-                    // Si no, elige uno al azar (o puedes manipularlo)
-                    const randomWinner = sorteoData.participants[Math.floor(Math.random() * sorteoData.participants.length)];
-                    document.getElementById('winnerDisplay').textContent = `🎉 ${randomWinner} 🎉`;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    countdownElement.style.display = "none";
+                    document.getElementById("waitingMessage").innerHTML = "<p>¡Los resultados están listos! 🔍</p>";
+                    resultsDiv.style.display = "block";
+                    
+                    // Mostrar resultados
+                    const assignedPrizesList = document.getElementById("assignedPrizesList");
+                    for (const [participant, prize] of Object.entries(sorteoData.assignedPrizes)) {
+                        const li = document.createElement("li");
+                        li.innerHTML = `<span class="winner">${participant}</span> → ${prize}`;
+                        assignedPrizesList.appendChild(li);
+                    }
                 }
-            }, 5000); // 5 segundos de "suspenso"
-        }
-        
-        function updateList(listId, items) {
-            const list = document.getElementById(listId);
-            list.innerHTML = '';
-            items.forEach(item => {
-                const li = document.createElement('li');
-                li.textContent = item;
-                list.appendChild(li);
-            });
+                timeLeft--;
+            }, 1000); // Actualiza cada segundo
         }
     </script>
 </body>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sorteo Online 🎉 (Broma)</title>
+    <title>Sorteo Online 🎉</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -52,7 +52,7 @@
     </style>
 </head>
 <body>
-    <h1>🎊 Sorteo Online (Broma) 🎊</h1>
+    <h1>🎊 Sorteo Online 🎊</h1>
     
     <div class="input-group">
         <input type="text" id="participantName" placeholder="Nombre del participante">
@@ -61,7 +61,7 @@
     
     <div id="participantsList">
         <h3>Participantes:</h3>
-        <ul id="participantsList"></ul>
+        <ul id="participantsListUL"></ul>
     </div>
     
     <div class="input-group">
@@ -71,16 +71,14 @@
     
     <div id="prizesList">
         <h3>Premios:</h3>
-        <ul id="prizesList"></ul>
+        <ul id="prizesListUL"></ul>
     </div>
     
-    <button onclick="generateLiveLink()">Generar Enlace para el Sorteo en Vivo</button>
+    <button onclick="generateLiveLink()">Generar Enlace para el Sorteo</button>
     <div id="liveLinkContainer" class="hidden">
         <p>Comparte este enlace con los participantes:</p>
         <p id="liveLink"></p>
     </div>
-    
-    <button onclick="startFakeDraw()" id="drawButton" class="hidden">🎉 SORTEAR 🎉</button>
     
     <script>
         const participants = [];
@@ -91,7 +89,7 @@
             const name = document.getElementById('participantName').value.trim();
             if (name) {
                 participants.push(name);
-                updateList('participantsList', participants);
+                updateList('participantsListUL', participants);
                 document.getElementById('participantName').value = '';
             }
         }
@@ -100,7 +98,7 @@
             const prize = document.getElementById('prizeName').value.trim();
             if (prize) {
                 prizes.push(prize);
-                updateList('prizesList', prizes);
+                updateList('prizesListUL', prizes);
                 document.getElementById('prizeName').value = '';
             }
         }
@@ -121,44 +119,30 @@
                 return;
             }
             
-            // Genera un enlace único (simulado)
+            if (participants.length !== prizes.length) {
+                alert("¡Debe haber el mismo número de participantes que de premios!");
+                return;
+            }
+            
+            // Genera un enlace único
             const randomId = Math.random().toString(36).substring(2, 8);
             const liveLink = `${window.location.href.replace('index.html', '')}live.html?id=${randomId}`;
             
             document.getElementById('liveLink').textContent = liveLink;
             document.getElementById('liveLinkContainer').classList.remove('hidden');
-            document.getElementById('drawButton').classList.remove('hidden');
             liveLinkGenerated = true;
             
             // Guarda los datos en localStorage para la página "live.html"
+            const assignedPrizes = {};
+            participants.forEach((participant, index) => {
+                assignedPrizes[participant] = prizes[index];
+            });
+            
             localStorage.setItem(`sorteo_${randomId}`, JSON.stringify({
                 participants,
                 prizes,
-                winner: null // Aquí puedes manipular el ganador más tarde
+                assignedPrizes // Asigna premios en orden
             }));
-        }
-        
-        // Función para manipular el resultado (elige un ganador falso)
-        function startFakeDraw() {
-            if (!liveLinkGenerated) {
-                alert("Primero genera el enlace en vivo.");
-                return;
-            }
-            
-            // Aquí puedes manipular el resultado. Por defecto, elige un participante al azar.
-            const randomWinnerIndex = Math.floor(Math.random() * participants.length);
-            const winner = participants[randomWinnerIndex];
-            const prize = prizes[0]; // O elige el premio que quieras
-            
-            // Guarda el ganador en localStorage
-            const urlParams = new URLSearchParams(window.location.search);
-            const sorteoId = urlParams.get('id');
-            
-            const sorteoData = JSON.parse(localStorage.getItem(`sorteo_${sorteoId}`));
-            sorteoData.winner = winner;
-            localStorage.setItem(`sorteo_${sorteoId}`, JSON.stringify(sorteoData));
-            
-            alert(`¡Sorteo manipulado! El ganador es ${winner} (pero puedes cambiarlo en el código).`);
         }
     </script>
 </body>
